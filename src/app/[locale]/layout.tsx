@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 //function to get the translations
 async function getMessages(locale: string) {
   try {
-    return (await import(`../../messages/${locale}.json`)).default
+    return (await import(`../../../messages/${locale}.json`)).default
   } catch (error) {
     notFound()
   }
