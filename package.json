@@ -7,7 +7,8 @@
     "serve": "node server.js",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@types/node": "20.4.5",
@@ -21,7 +22,9 @@
     "http-proxy-middleware": "^3.0.0",
     "next": "13.4.12",
     "next-intl": "^2.19.0",
+    "patch-package": "^8.0.0",
     "postcss": "8.4.27",
+    "prettier": "^3.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sharp": "^0.33.3",

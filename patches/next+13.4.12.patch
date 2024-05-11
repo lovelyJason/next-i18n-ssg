@@ -1,0 +1,166 @@
+diff --git a/node_modules/next/dist/build/index.js b/node_modules/next/dist/build/index.js
+index 667a9ef..f0ebe65 100644
+--- a/node_modules/next/dist/build/index.js
++++ b/node_modules/next/dist/build/index.js
+@@ -1,4 +1,6 @@
+ "use strict";
++
++console.log('next>dist>build/index.js--------')
+ Object.defineProperty(exports, "__esModule", {
+     value: true
+ });
+@@ -502,6 +504,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+             if (!distDirCreated || !await (0, _iswriteable.isWriteable)(distDir)) {
+                 throw new Error("> Build directory is not writeable. https://nextjs.org/docs/messages/build-dir-not-writeable");
+             }
++            console.log('config.cleanDistDir && !isGenerate', config.cleanDistDir && !isGenerate) // true
+             if (config.cleanDistDir && !isGenerate) {
+                 await (0, _recursivedelete.recursiveDelete)(distDir, /^cache/);
+             }
+@@ -1456,6 +1459,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                             //
+                             // Note: prerendering disables automatic static optimization.
+                             ssgPages.forEach((page)=>{
++                              // console.log('------page-------', page)
+                                 if ((0, _utils.isDynamicRoute)(page)) {
+                                     tbdPrerenderRoutes.push(page);
+                                     if (ssgStaticFallbackPages.has(page)) {
+@@ -1533,6 +1537,8 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                                         "/500"
+                                     ] : []
+                                 ]){
++                                    console.log('---ssgPages-----', ssgPages)
++
+                                     const isSsg = ssgPages.has(page);
+                                     const isDynamic = (0, _utils.isDynamicRoute)(page);
+                                     const isFallback = isSsg && ssgStaticFallbackPages.has(page);
+@@ -1663,6 +1669,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                         }
+                     }
+                     const moveExportedPage = async (originPage, page, file, isSsg, ext, additionalSsgFile = false)=>{
++                        console.log('moveExportedPage', page, file, ext)
+                         return staticGenerationSpan.traceChild("move-exported-page").traceAsyncFn(async ()=>{
+                             file = `${file}.${ext}`;
+                             const orig = _path.default.join(exportOptions.outdir, file);
+@@ -1691,6 +1698,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                                 delete pagesManifest[page];
+                             }
+                             if (i18n) {
++                                console.log('is i18nn', i18n)
+                                 if (additionalSsgFile) return;
+                                 for (const locale of i18n.locales){
+                                     const curPath = `/${locale}${page === "/" ? "" : page}`;
+@@ -1738,6 +1746,9 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                     if (useDefaultStatic500) {
+                         await moveExportedPage("/_error", "/500", "/500", false, "html");
+                     }
++                    console.log('---ssgPages-----', ssgPages)
++                    console.log('---combinedPages-----', combinedPages)
++
+                     for (const page of combinedPages){
+                         const isSsg = ssgPages.has(page);
+                         const isStaticSsgFallback = ssgStaticFallbackPages.has(page);
+@@ -1829,6 +1840,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                     console.log();
+                 });
+             }
++            // console.log(ssgPages)
+             // ensure the worker is not left hanging
+             pagesStaticWorkers.close();
+             appStaticWorkers == null ? void 0 : appStaticWorkers.close();
+@@ -2009,6 +2021,7 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+                         await appWorker.end();
+                     } : undefined
+                 };
++                // console.log('nextBuildSpan', nextBuildSpan)
+                 await exportApp(dir, options, nextBuildSpan);
+                 // ensure the worker is not left hanging
+                 pagesWorker.close();
+@@ -2016,6 +2029,8 @@ async function build(dir, reactProductionProfiling = false, debugOutput = false,
+             }
+             await nextBuildSpan.traceChild("telemetry-flush").traceAsyncFn(()=>telemetry.flush());
+         });
++        // console.log('ssgPages', ssgPages)
++        console.log('-------buildResult------', buildResult)
+         return buildResult;
+     } finally{
+         // Ensure we wait for lockfile patching if present
+diff --git a/node_modules/next/dist/export/index.js b/node_modules/next/dist/export/index.js
+index 8a02a8b..0346937 100644
+--- a/node_modules/next/dist/export/index.js
++++ b/node_modules/next/dist/export/index.js
+@@ -46,6 +46,27 @@ const _require = require("../server/require");
+ const _isapprouteroute = require("../lib/is-app-route-route");
+ const _isapppageroute = require("../lib/is-app-page-route");
+ const _iserror = /*#__PURE__*/ _interop_require_default(require("../lib/is-error"));
++const _prettier = require('prettier');
++async function formatAndCopyHtml(htmlSrc, htmlDest) {
++  try {
++    // 读取 HTML 文件内容
++    const htmlContent = await _fs.promises.readFile(htmlSrc, 'utf8');
++
++    // 使用 prettier 格式化 HTML
++    const formattedHtml = await _prettier.format(htmlContent, {
++      parser: "html", // 指定解析器为 HTML
++      // 可以添加其他 prettier 配置选项...
++    });
++
++    // 将格式化后的 HTML 写入目标文件
++    console.log('formattedHtml', formattedHtml)
++    await _fs.promises.writeFile(htmlDest, formattedHtml, 'utf8');
++
++    console.log(`HTML 文件从 ${htmlSrc} 格式化并复制到 ${htmlDest}`);
++  } catch (error) {
++    console.error('在格式化或复制 HTML 文件时出错:', error);
++  }
++}
+ function _interop_require_default(obj) {
+     return obj && obj.__esModule ? obj : {
+         default: obj
+@@ -167,6 +188,7 @@ class ExportError extends Error {
+     }
+ }
+ async function exportApp(dir, options, span) {
++    console.log('next-export entry')
+     const nextExportSpan = span.traceChild("next-export");
+     return nextExportSpan.traceAsyncFn(async ()=>{
+         var _nextConfig_amp, _nextConfig_experimental_amp, _nextConfig_experimental_amp1, _nextConfig_experimental_amp2;
+@@ -398,6 +420,7 @@ async function exportApp(dir, options, span) {
+             });
+             return exportMap;
+         });
++        // console.log('------exportPathMap-----', exportPathMap)
+         // only add missing 404 page when `buildExport` is false
+         if (!options.buildExport) {
+             // only add missing /404 if not specified in `exportPathMap`
+@@ -537,6 +560,7 @@ async function exportApp(dir, options, span) {
+                     fetchCacheKeyPrefix: nextConfig.experimental.fetchCacheKeyPrefix,
+                     incrementalCacheHandlerPath: nextConfig.experimental.incrementalCacheHandlerPath
+                 });
++                // console.log('-------result---------', result)
+                 for (const validation of result.ampValidations || []){
+                     const { page , result: ampValidationResult  } = validation;
+                     ampValidations[page] = ampValidationResult;
+@@ -596,14 +620,19 @@ async function exportApp(dir, options, span) {
+                 const ampHtmlDest = (0, _path.join)(outDir, `${route}.amp${subFolders ? `${_path.sep}index` : ""}.html`);
+                 const jsonDest = isAppPath ? (0, _path.join)(outDir, `${route}${subFolders && route !== "/index" ? `${_path.sep}index` : ""}.txt`) : (0, _path.join)(pagesDataDir, `${route}.json`);
+                 await _fs.promises.mkdir((0, _path.dirname)(htmlDest), {
+-                    recursive: true
++                  recursive: true
+                 });
+                 await _fs.promises.mkdir((0, _path.dirname)(jsonDest), {
+-                    recursive: true
++                  recursive: true
+                 });
+                 const htmlSrc = `${orig}.html`;
+                 const jsonSrc = `${orig}${isAppPath ? ".rsc" : ".json"}`;
+-                await _fs.promises.copyFile(htmlSrc, htmlDest);
++                console.log('0--------htmlDest---------', htmlDest) //  /Users/jasonhuang/projects/next-i18n-ssg/out/index.html
++                console.log('----htmlSrc------', htmlSrc)
++                console.log('----jsonSrc------', jsonSrc)
++                console.log('----jsonDest------', jsonDest)
++                await formatAndCopyHtml(htmlSrc, htmlDest)
++                // await _fs.promises.copyFile(htmlSrc, htmlDest);
+                 await _fs.promises.copyFile(jsonSrc, jsonDest);
+                 if (await exists(`${orig}.amp.html`)) {
+                     await _fs.promises.mkdir((0, _path.dirname)(ampHtmlDest), {
