@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter } from 'next-intl/client';
 
+console.log(process.env.ab)
+
 // zh-CN -> zh, todo: zh-tw要额外处理
 function normalizeCountryCode(code: string) {
   // 先将字符串转换为小写
