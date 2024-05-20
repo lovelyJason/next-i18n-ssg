@@ -3,8 +3,8 @@
 import { useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter } from 'next-intl/client';
+import Button from '@/src/components/Button';
 
-console.log(process.env.ab)
 
 // zh-CN -> zh, todo: zh-tw要额外处理
 function normalizeCountryCode(code: string) {
@@ -29,6 +29,9 @@ export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const gotoNextPage = () => {
+    router.push('/success')
+  }
 
   useEffect(() => {
     const locale = navigator.language
@@ -39,6 +42,8 @@ export default function HomePage() {
   return (
     <div>
       {t('helloWorld')}
+      <br />
+      <Button onClick={gotoNextPage}>click me click me</Button>
     </div>
   )
 }
